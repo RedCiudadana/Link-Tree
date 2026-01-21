@@ -7,23 +7,88 @@ import {
   ArrowRight,
   Calendar,
   BookOpen,
-  BarChart3,
-  Scale,
-  Vote,
-  Database,
-  Building2,
   Megaphone,
   ExternalLink,
   ChevronUp,
   Sparkles,
   TrendingUp,
-  GraduationCap,
-  Shield,
-  Globe,
-  Users,
-  Brain,
-  FileText
+  Globe
 } from 'lucide-react';
+
+type Frontmatter = Record<string, string>;
+
+const parseFrontmatter = (raw: string): Frontmatter => {
+  const match = raw.match(/^---\s*[\r\n]+([\s\S]*?)\s*---/);
+  if (!match) return {};
+
+  const lines = match[1].split(/\r?\n/);
+  const data: Frontmatter = {};
+  let currentKey: string | null = null;
+
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const keyMatch = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+    if (keyMatch) {
+      currentKey = keyMatch[1];
+      const value = keyMatch[2] ?? '';
+      data[currentKey] = value.replace(/^"(.*)"$/, '$1').trim();
+    } else if (currentKey) {
+      data[currentKey] = `${data[currentKey]} ${line.trim()}`.trim();
+    }
+  }
+
+  return data;
+};
+
+const loadContent = (glob: Record<string, string>) =>
+  Object.entries(glob)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([path, raw], index) => ({
+      id: index + 1,
+      path,
+      data: parseFrontmatter(raw)
+    }));
+
+const bloquePrincipalFiles = import.meta.glob('/src/content/bloque_principal/*.md', { as: 'raw', eager: true });
+const aprendeRedFiles = import.meta.glob('/src/content/aprende_red_ciudadana/*.md', { as: 'raw', eager: true });
+const exploraPlataformasFiles = import.meta.glob('/src/content/explora_plataformas/*.md', { as: 'raw', eager: true });
+
+const importantItems = loadContent(bloquePrincipalFiles).map((item) => ({
+  id: item.id,
+  title: item.data.titulo || item.data.title || 'Sin titulo',
+  description: item.data.subtitulo || '',
+  image: item.data.foto || '',
+  ctaText: item.data.texto_boton || 'Ver mas',
+  ctaUrl: item.data.enlace_boton || '#',
+  badge: item.data.badge
+}));
+
+const formacionItems = loadContent(aprendeRedFiles).map((item) => ({
+  id: item.id,
+  title: item.data.title || 'Sin titulo',
+  description: item.data.subtitulo || '',
+  image: item.data.foto || '',
+  url: item.data.enlace_boton || '#',
+  badge: item.data.badge
+}));
+
+const plataformaIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  justiciapedia: BookOpen
+};
+
+const plataformas = loadContent(exploraPlataformasFiles).map((item) => {
+  const slug = item.path.split('/').pop()?.replace(/\.md$/, '').toLowerCase() || '';
+  const Icon = plataformaIconMap[slug] || Globe;
+  return {
+    id: item.id,
+    title: item.data.title || 'Sin titulo',
+    description: item.data.subtitulo || '',
+    icon: Icon,
+    image: item.data.foto || '',
+    url: item.data.enlace_boton || '#',
+    badge: item.data.badge
+  };
+});
 
 // ============================================
 // CONFIGURACIÓN CENTRAL - EDITAR AQUÍ
@@ -56,157 +121,14 @@ const CONFIG = {
     showColabora: true
   },
 
-  // Lo más importante ahora
-  importantItems: [
-    {
-      id: 1,
-      title: 'Curso de Datos Abiertos',
-      description: '22 de Enero a Marzo 2026 - Aprende a utilizar y analizar datos públicos para fortalecer la transparencia',
-      image: 'https://picsum.photos/seed/datosabiertos2026/800/400',
-      ctaText: 'Inscríbete ahora',
-      ctaUrl: 'https://example.com/curso-datos-abiertos',
-      badge: 'Nuevo'
-    },
-    {
-      id: 2,
-      title: 'Justicipedia - Comisiones de Postulación',
-      description: 'Información actualizada sobre las Comisiones de Postulación del TSE, MP y CC',
-      image: 'https://picsum.photos/seed/justicipedia/800/400',
-      ctaText: 'Explorar Justicipedia',
-      ctaUrl: 'https://example.com/justicipedia',
-      badge: 'Actualizado'
-    },
-    {
-      id: 3,
-      title: 'Desafíos de Innovación Red Ciudadana',
-      description: 'Participa en nuestros desafíos enfocados en IA y Datos Abiertos para la democracia',
-      image: 'https://picsum.photos/seed/desafios-innovacion/800/400',
-      ctaText: 'Conoce más',
-      ctaUrl: 'https://example.com/desafios-innovacion',
-      badge: 'Nuevo'
-    }
-  ],
+  // Lo mas importante ahora
+  importantItems,
 
-  // Formación
-  formacionItems: [
-    {
-      id: 1,
-      title: 'Escuela Red Ciudadana',
-      description: 'Programas completos de formación ciudadana',
-      image: 'https://picsum.photos/seed/escuela/400/300',
-      url: 'https://example.com/escuela'
-    },
-    {
-      id: 2,
-      title: 'Cursos activos',
-      description: 'Cursos disponibles para inscripción inmediata',
-      image: 'https://picsum.photos/seed/cursos/400/300',
-      url: 'https://example.com/cursos',
-      badge: 'Actualizado'
-    },
-    {
-      id: 3,
-      title: 'Próximas formaciones 2026',
-      description: 'Calendario completo del año',
-      image: 'https://picsum.photos/seed/proximas/400/300',
-      url: 'https://example.com/proximas'
-    },
-    {
-      id: 4,
-      title: 'Certificados y metodología',
-      description: 'Conoce nuestro proceso de certificación',
-      image: 'https://picsum.photos/seed/certificados/400/300',
-      url: 'https://example.com/certificados'
-    }
-  ],
+  // Formacion
+  formacionItems,
 
   // Plataformas
-  plataformas: [
-    {
-      id: 1,
-      title: 'Conecta Futuro',
-      description: 'Formación de vanguardia para funcionarios y periodistas',
-      details: ['Cursos especializados', 'Certificaciones', 'Comunidad'],
-      icon: GraduationCap,
-      image: 'https://picsum.photos/seed/conectafuturo/200/150',
-      url: 'https://example.com/conecta-futuro'
-    },
-    {
-      id: 2,
-      title: 'Portal Anticorrupción',
-      description: 'Herramientas y recursos para combatir la corrupción',
-      details: ['Monitoreo ciudadano', 'Alertas tempranas', 'Recursos'],
-      icon: Shield,
-      image: 'https://picsum.photos/seed/anticorrupcion/200/150',
-      url: 'https://example.com/portal-anticorrupcion',
-      badge: 'Nuevo'
-    },
-    {
-      id: 3,
-      title: 'Portal de Gobierno Digital',
-      description: 'Plataforma integral para la transformación digital del sector público',
-      details: ['Servicios digitales', 'Trámites en línea', 'Datos gubernamentales'],
-      icon: Globe,
-      image: 'https://picsum.photos/seed/gobiernod/200/150',
-      url: 'https://example.com/gobierno-digital'
-    },
-    {
-      id: 4,
-      title: 'Datos Abiertos',
-      description: 'Acceso a datos públicos y transparencia gubernamental',
-      details: ['Conjuntos de datos', 'Visualizaciones', 'API pública'],
-      icon: Database,
-      image: 'https://picsum.photos/seed/datosabiertos/200/150',
-      url: 'https://example.com/datos-abiertos',
-      badge: 'Actualizado'
-    },
-    {
-      id: 5,
-      title: 'Participa',
-      description: 'Plataforma de participación ciudadana, donde se plantean discusiones sobre marco normativo, políticas y co-creación',
-      details: ['Consultas públicas', 'Propuestas ciudadanas', 'Co-creación'],
-      icon: Users,
-      image: 'https://picsum.photos/seed/participa/200/150',
-      url: 'https://example.com/participa'
-    },
-    {
-      id: 6,
-      title: 'Inteligencia Artificial Red Ciudadana',
-      description: 'Herramientas de IA para análisis y procesamiento de información',
-      details: ['Análisis automatizado', 'Procesamiento de datos', 'Modelos IA'],
-      icon: Brain,
-      image: 'https://picsum.photos/seed/iaredciudadana/200/150',
-      url: 'https://example.com/ia-redciudadana',
-      badge: 'Nuevo'
-    },
-    {
-      id: 7,
-      title: 'Justiciapedia',
-      description: 'Herramienta interactiva y sencilla que busca acercar a la ciudadanía con el sector justicia',
-      details: ['Información accesible', 'Comprensión del sector', 'Interactivo'],
-      icon: BookOpen,
-      image: 'https://picsum.photos/seed/justiciapedia/200/150',
-      url: 'https://example.com/justiciapedia'
-    },
-    {
-      id: 8,
-      title: 'Justicia Abierta',
-      description: 'Innovación para mejorar los servicios públicos en el sector justicia',
-      details: ['Innovación judicial', 'Servicios públicos', 'Transparencia'],
-      icon: Scale,
-      image: 'https://picsum.photos/seed/justiciaabierta/200/150',
-      url: 'https://example.com/justicia-abierta'
-    },
-    {
-      id: 9,
-      title: 'Observatorio de Trámites',
-      description: 'Red Ciudadana recopila y organiza información sobre trámites gubernamentales',
-      details: ['Información de trámites', 'Requisitos completos', 'Guías paso a paso'],
-      icon: FileText,
-      image: 'https://picsum.photos/seed/tramites/200/150',
-      url: 'https://example.com/observatorio-tramites'
-    }
-  ],
+  plataformas,
 
   // Publicaciones
   publicaciones: [
@@ -538,7 +460,7 @@ function App() {
           className="bg-white"
         >
           <div className="grid gap-6 md:gap-8">
-            {CONFIG.importantItems.map((item) => (
+            {importantItems.map((item) => (
               <article
                 key={item.id}
                 className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-1"
@@ -590,7 +512,7 @@ function App() {
           className="bg-gradient-to-b from-slate-50 to-blue-50/30"
         >
           <div className="grid sm:grid-cols-2 gap-6 md:gap-8">
-            {CONFIG.formacionItems.map((item) => (
+            {formacionItems.map((item) => (
               <a
                 key={item.id}
                 href={item.url}
@@ -635,7 +557,7 @@ function App() {
           className="bg-white"
         >
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {CONFIG.plataformas.map((plataforma) => {
+            {plataformas.map((plataforma) => {
               const Icon = plataforma.icon;
               return (
                 <a
