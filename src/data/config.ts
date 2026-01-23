@@ -48,11 +48,11 @@ export const CONFIG = {
 
   // Redes sociales
   socialLinks: {
-    instagram: 'https://instagram.com/redciudadanagt',
-    twitter: 'https://twitter.com/RedxGuate',
-    tiktok: 'https://tiktok.com/@redciudadana',
-    linkedin: 'https://linkedin.com/company/red-ciudadana',
-    youtube: 'https://youtube.com/@redciudadana'
+    instagram: 'https://www.instagram.com/redxguate/',
+    twitter: 'https://twitter.com/redxguate',
+    tiktok: 'https://www.tiktok.com/@redxguate',
+    linkedin: 'https://www.linkedin.com/company/2532725',
+    youtube: ' https://www.youtube.com/channel/UCQwc62j7beStZYFzwPxBEQg'
   },
 
   // Secciones visibles

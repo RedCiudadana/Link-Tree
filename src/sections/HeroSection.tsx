@@ -87,18 +87,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ featuredCTA, socialLinks, onL
           </a>
         </div>
 
-        {featuredCTA.enabled && (
-          <Button
-            href={featuredCTA.url}
-            variant="primary"
-            size="lg"
-            icon={<ArrowRight className="w-5 h-5" />}
-            onClick={() => onLinkClick(featuredCTA.url, 'hero-cta')}
-            className="shadow-2xl"
-          >
-            {featuredCTA.text}
-          </Button>
-        )}
       </div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
