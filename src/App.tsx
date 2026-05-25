@@ -45,11 +45,7 @@ function App() {
       */}
 
       {CONFIG.sections.showHero && (
-        <HeroSection
-          featuredCTA={CONFIG.featuredCTA}
-          socialLinks={CONFIG.socialLinks}
-          onLinkClick={handleLinkClick}
-        />
+        <HeroSection socialLinks={CONFIG.socialLinks} />
       )}
 
       {CONFIG.sections.showImportant && (
